@@ -1,0 +1,48 @@
+import os
+import zipfile
+from google.colab import files
+
+# Step 1: Upload images
+uploaded = files.upload()
+image_files = list(uploaded.keys())
+
+# Step 2: Ask how many naming groups
+num_groups = int(input("🔢 How many naming groups do you want? "))
+
+rules = []
+for i in range(num_groups):
+    print(f"\n📌 Rule {i+1} of {num_groups}")
+    start = int(input("Enter start index (0-based): "))
+    end = int(input("Enter end index (inclusive): "))
+    base_name = input("Enter base name (e.g., Vacation, Country, etc.): ")
+    rules.append((start, end, base_name))
+
+# Step 3: Apply rules
+renamed_files = []
+output_folder = "renamed_images"
+os.makedirs(output_folder, exist_ok=True)
+
+for start, end, base_name in rules:
+    counter = 1
+    for idx in range(start, end+1):
+        if idx < len(image_files):
+            ext = os.path.splitext(image_files[idx])[1]
+            new_name = f"{base_name}{counter}{ext}"
+            old_path = image_files[idx]
+            new_path = os.path.join(output_folder, new_name)
+            
+            # Save renamed file
+            with open(new_path, "wb") as f:
+                f.write(uploaded[old_path])
+            
+            renamed_files.append(new_path)
+            counter += 1
+
+# Step 4: Zip renamed files only
+zip_filename = "renamed_images.zip"
+with zipfile.ZipFile(zip_filename, 'w') as zipf:
+    for file in renamed_files:
+        zipf.write(file, os.path.basename(file))
+
+# Step 5: Download zip
+files.download(zip_filename)
