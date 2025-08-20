@@ -1,0 +1,33 @@
+from google.colab import files
+import os
+import zipfile
+
+# Step 1: Upload multiple images
+print("📂 Please upload your images (select multiple at once)...")
+uploaded = files.upload()  # user selects multiple files
+
+# Step 2: Create a folder for renamed images
+folder_path = "/content/renamed_images"
+os.makedirs(folder_path, exist_ok=True)
+
+# Step 3: Rename and save files
+for i, filename in enumerate(uploaded.keys(), start=1):
+    ext = os.path.splitext(filename)[1]  # keep extension (.jpg, .png etc.)
+    new_name = f"Image {i}{ext}"
+    new_path = os.path.join(folder_path, new_name)
+    os.rename(filename, new_path)
+
+print("✅ All images renamed!")
+
+# Step 4: Zip renamed images
+zip_filename = "renamed_images.zip"
+zip_path = f"/content/{zip_filename}"
+
+with zipfile.ZipFile(zip_path, 'w') as zipf:
+    for file in os.listdir(folder_path):
+        zipf.write(os.path.join(folder_path, file), file)
+
+print("✅ Zipped renamed images!")
+
+# Step 5: Download ZIP
+files.download(zip_path)
